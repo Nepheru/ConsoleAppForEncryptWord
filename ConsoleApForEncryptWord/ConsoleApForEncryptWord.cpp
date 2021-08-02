@@ -15,6 +15,7 @@ string SearchEcnryption(vector<string> VectorWords, vector<string> VectorWords2,
 void ReadWordFromFile(ifstream& ObjectReadFile, char* ArrayForRewrite);
 void ProcesingDoc(string FileName, vector<string>& VectorEcnrWords, vector<string>& VectorUniqueWords);
 void EncryptWord(char* arrayForEncrypt);
+string GetFileNameFromPath(string FilePath);
 // End of functions.
 
 int main(int argc, char* argv[])
@@ -29,17 +30,17 @@ int main(int argc, char* argv[])
     vector<string> VectorUniqueWords;    // Vector for uninque words.
     vector<string> VectorEncryptedWords; // Vector for encrytped words.
 
-    cout << "Enter name of first document: ";
+    // If only file name entered, file will be selected from project folder.
+    // Note, that you should enter different slash '/', not a '\' like in explorer file path.
+    // Created files will be saved in project folder.
+    cout << "Enter path and name of documents. Example: C:/Games/Doc1.txt" << endl << "First document: ";
     cin >> Doc1FileName;
-    Doc1FileName += ".txt";
-    cout << "Enter name of second document: ";
+    cout << "Second document: ";
     cin >> Doc2FileName;
-    Doc2FileName += ".txt";
 
     // Start threads.
     thread thread1(ProcesingDoc, Doc1FileName, std::ref(VectorEncryptedWords), std::ref(VectorUniqueWords));
     thread thread2(ProcesingDoc, Doc2FileName, std::ref(VectorEncryptedWords), std::ref(VectorUniqueWords));
-
     // End of threads.
 
     thread1.join();
@@ -53,6 +54,30 @@ int main(int argc, char* argv[])
     cout << endl;
     system("pause");
     return 0;
+}
+
+/// <summary>
+/// Receiving file name from file path.
+/// </summary>
+/// <param name="FilePath">File path.</param>
+/// <returns>File name.</returns>
+string GetFileNameFromPath(string FilePath)
+{
+    string fileName(20, '\0');
+    size_t pathLen = FilePath.length();
+    for (int i = 0; i < pathLen; i++) { // Reading string untill we meet '/'
+        if (FilePath[i] != '/') {
+            int j = 0;
+            for (; i < pathLen && FilePath[i] != '/'; i++, j++) {
+
+                fileName[j] = FilePath[i];
+            }
+            fileName[j++] = '\0';
+        } else {
+            fileName = " ";
+        }
+    }
+    return fileName;
 }
 
 /// <summary>
@@ -156,7 +181,7 @@ void ProcesingDoc(string FileName, vector<string>& VectorEcnrWords, vector<strin
         return;
     }
 
-    ofstream ObjectWriteFile("Random-" + FileName, ios_base::out | ios_base::trunc); // Object for random-docX (writing).
+    ofstream ObjectWriteFile("Random-" + GetFileNameFromPath(FileName), ios_base::out | ios_base::trunc); // Object for random-docX (writing).
 
     if (!ObjectWriteFile.is_open()) {
         cout << "File Random-" << FileName << " cannot be opened or created.\n";
